@@ -24,7 +24,7 @@ export default function BenefitsSection() {
   return (
     <section id="beneficii" style={{ paddingTop: "1rem", paddingBottom: "4rem", background: "#000" }}>
       <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 1.5rem" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
           {benefits.map((b, i) => (
             <motion.div key={b.number} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.6, delay: i * 0.08 }}
               style={{ position: "relative", overflow: "hidden", cursor: "default", display: "flex", flexDirection: "column", background: cardGradients[i], minHeight: 420 }}>
