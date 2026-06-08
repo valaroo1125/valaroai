@@ -10,30 +10,45 @@ function ParticleCanvas() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    const isMobile = window.innerWidth <= 768;
+    const COUNT = isMobile ? 40 : 100;
+    const CONNECT_DIST = isMobile ? 80 : 110;
+    const CONNECT_DIST_SQ = CONNECT_DIST * CONNECT_DIST;
     let w = canvas.width = canvas.offsetWidth;
     let h = canvas.height = canvas.offsetHeight;
     let animId;
-    const particles = Array.from({ length: 180 }, () => ({
+    let frameCount = 0;
+
+    const particles = Array.from({ length: COUNT }, () => ({
       x: Math.random() * w, y: Math.random() * h,
       r: Math.random() * 1.8 + 0.3,
-      vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
       alpha: Math.random() * 0.6 + 0.2
     }));
+
     const draw = () => {
+      animId = requestAnimationFrame(draw);
+      // On mobile, skip every other frame
+      if (isMobile) { frameCount++; if (frameCount % 2 !== 0) return; }
+
       ctx.clearRect(0, 0, w, h);
-      particles.forEach((p) => {
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
         p.x += p.vx; p.y += p.vy;
         if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
         if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
-      });
+      }
+
+      // Batch all lines in one path per opacity level
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
+          const distSq = dx * dx + dy * dy;
+          if (distSq < CONNECT_DIST_SQ) {
+            const alpha = (1 - Math.sqrt(distSq) / CONNECT_DIST) * 0.2;
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(52,168,120,${(1 - dist / 120) * 0.25})`;
+            ctx.strokeStyle = `rgba(52,168,120,${alpha})`;
             ctx.lineWidth = 0.5;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
@@ -41,12 +56,14 @@ function ParticleCanvas() {
           }
         }
       }
-      particles.forEach((p) => {
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
         ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(100,210,160,${p.alpha})`; ctx.fill();
-      });
-      animId = requestAnimationFrame(draw);
+      }
     };
+
     draw();
     const onResize = () => { w = canvas.width = canvas.offsetWidth; h = canvas.height = canvas.offsetHeight; };
     window.addEventListener("resize", onResize);
